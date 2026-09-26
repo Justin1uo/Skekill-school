@@ -12,6 +12,7 @@
 | 9/26 | S0 | 蓝图假设 Docker Compose 起中间件，但本机没有 Docker 也没装 WSL | Windows 家庭版装 WSL2+Docker Desktop 一次性成本高，且非项目核心 | 决策：开发期用本机原生 MySQL80 服务 + 原生 Redis（d:\develop\Redis）；Docker 只留给 Stage 6 部署（届时再决策 WSL2 或云服务器） | ✅ |
 | 9/26 | S0 | Redis 启动后 ping 返回 NOAUTH | redis.windows.conf 里设了 requirepass | 密码写入 application-local.yml（已 gitignore），CLI 操作带 `-a` | ✅ |
 | 9/26 | S0 | 本机 JDK 是 21，蓝图锁 JDK 17 | - | pom 里 `<java.version>17</java.version>`：JDK 21 编译器用 release=17 目标，产物与 JDK 17 语义一致，无需另装 | ✅ |
+| 9/26 | S0 | 本机原生 Redis 是 3.2.100（微软 Windows 移植版），蓝图目标 7.x | 项目用到的命令（EVAL/GET/DECR/SADD/SISMEMBER/HSET/PEXPIRE）与 Redisson(3.0+)/Lettuce 均兼容 3.2，已实测 EVAL+SADD/SISMEMBER 通过 | 开发期先用 3.2；部署用 Docker redis:7-alpine。若 Day 4 锁相关出现莫名报错，备选方案：换 tporadowski Redis 5.0.14 Windows 版（10 分钟迁移） | 🔄 观察 |
 | | | | | | |
 
 <!-- 模板（复制上面一行填写）：
@@ -35,7 +36,7 @@
 | 项 | 值 |
 |---|---|
 | MySQL | 本机服务 `MySQL80`（8.0），root 密码在 application-local.yml |
-| Redis | `d:\develop\Redis`，启动：`./redis-server.exe redis.windows.conf`，密码见 application-local.yml，CLI：`redis-cli.exe -a <密码>` |
+| Redis | `d:\develop\Redis`，**3.2.100**，启动：`./redis-server.exe redis.windows.conf`，密码见 application-local.yml，CLI：`redis-cli.exe -a <密码>` |
 | RabbitMQ | 未装，Day 5 用 winget 装（Erlang.ErlangOTP + RabbitMQ.RabbitMQ） |
 | JMeter | `d:\develop\apache-jmeter-5.6.3`（与蓝图要求 5.6 一致，免装） |
 | JDK / Maven | JDK 21（编译目标 17）/ Maven 3.9.15 |
