@@ -26,7 +26,7 @@
 ## 本机环境事实（2026-09-26 盘点）
 
 - Windows 11；JDK 21（pom 编译目标 17）；Maven 3.9.15；Git 2.54
-- MySQL 8.0 = 本机服务 `MySQL80`（非 Docker）；Redis = `d:\develop\Redis` 原生 Windows 版（开机需手动启动，密码见 application-local.yml）
+- MySQL 8.0 = 本机服务 `MySQL80`（非 Docker）；Redis = `d:\develop\Redis` 原生 Windows 版 **3.2.100**（开机需手动启动，密码见 application-local.yml；EVAL/SADD/SISMEMBER 已实测可用，部署目标仍是 redis:7）
 - **Docker / WSL 未安装**——不要给出依赖 Docker 的本地开发步骤；部署（Stage 6）时再决策
 - RabbitMQ 未装（Day 5 winget 安装）；JMeter 在 `d:\develop\apache-jmeter-5.6.3`
 - redis-cli 用法：`/d/develop/Redis/redis-cli.exe -a <密码>`；mysql CLI 可用
