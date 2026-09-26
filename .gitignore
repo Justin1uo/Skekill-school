@@ -1,0 +1,31 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+
+# 本地敏感配置（如需覆盖 application.yml 中的密码，用 application-local.yml）
+application-local.yml
+src/main/resources/application-local.yml
+
+# 日志与运行时产物
+logs/
+*.log
+dump.rdb
+
+# 压测产物（jmx 脚本保留，结果文件不入库）
+jmeter/results/
+jmeter/*.jtl
+jmeter/*.csv
+
+# OS
+.DS_Store
+Thumbs.db
