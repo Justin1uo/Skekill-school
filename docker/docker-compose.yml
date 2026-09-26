@@ -1,0 +1,85 @@
+# ============================================================
+# 高校选课系统 · 部署编排（Stage 6 用；目标服务器 2G 内存）
+# 本机开发【不用这个文件】：MySQL/Redis 已用 Windows 原生服务，见 DEVELOPMENT_GUIDE.md
+# 内存预算（2G）：app 512m + mysql ~400m + redis ~100m + rabbitmq ~300m + 系统余量
+# ============================================================
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: cs-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123456}
+      MYSQL_DATABASE: course_selection
+    ports:
+      - "3306:3306"
+    volumes:
+      - ../sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      - mysql-data:/var/lib/mysql
+    command:
+      - --max_connections=300          # 压测 1000 并发时应用侧连接池只有 20，这里留余量给排查
+      - --innodb_buffer_pool_size=256M # 2G 服务器上的约束，本地开发机可放大
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD:-root123456}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: cs-redis
+    # 生产语义：开 AOF，重启后名额/时段数据不丢（方案 A 的软肋靠这个 + 启动重建缓解）
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-luohaoyu123}",
+              "--appendonly", "yes", "--maxmemory", "96mb", "--maxmemory-policy", "noeviction"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    mem_limit: 128m
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-luohaoyu123}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: cs-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"   # 管理台：压测时盯队列堆积/死信，是验收 MQ 链路的窗口
+    mem_limit: 384m
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: cs-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/course_selection?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+      MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123456}
+      SPRING_DATA_REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-luohaoyu123}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      JAVA_OPTS: "-Xmx512m -Xms256m"   # 2G 服务器硬约束，蓝图 Stage 6
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  mysql-data:
+  redis-data:

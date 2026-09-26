@@ -1,0 +1,81 @@
+server:
+  port: 8080
+  tomcat:
+    # 压测调优点：默认 200 线程在 1000 并发梯度下会先于业务代码成为瓶颈。
+    # Stage 5 压测时如需调整，改这里并在压测记录中注明，否则数据不可比。
+    threads:
+      max: 400
+    accept-count: 200
+
+spring:
+  application:
+    name: course-selection
+
+  # 本地机密配置（MySQL/Redis 密码）放 application-local.yml，该文件已被 .gitignore，
+  # 不会进 Git 仓库——仓库将来要公开放简历，不能带任何真实密码。
+  # optional: 前缀保证文件不存在时（如 Docker 环境用环境变量注入）也能正常启动。
+  config:
+    import: "optional:classpath:application-local.yml"
+
+  datasource:
+    # 本机 MySQL80 Windows 服务（非 Docker）。库名 course_selection，Day 1 手动建库导表。
+    url: jdbc:mysql://localhost:3306/course_selection?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+    username: root
+    # 真实密码写在 application-local.yml（不进 Git）；Docker 环境用环境变量 MYSQL_PASSWORD 覆盖
+    password: ${MYSQL_PASSWORD:CHANGE_ME}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      # 连接池故意不设大：池太大压垮 MySQL，太小限制吞吐。Stage 5 压测时作为对照变量之一。
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 3000
+
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      # 本机 Redis（d:\develop\Redis）。真实密码在 application-local.yml，不进 Git
+      password: ${REDIS_PASSWORD:CHANGE_ME}
+      lettuce:
+        pool:
+          max-active: 32
+          max-idle: 8
+          min-idle: 2
+
+  rabbitmq:
+    # Stage 5 前本机未装 RabbitMQ 也不影响启动（连接是懒加载）。
+    # Day 5 安装后把 management.health.rabbit.enabled 改回 true。
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+    db-config:
+      # 表主键是 BIGINT 无 AUTO_INCREMENT，由 MyBatis-Plus 雪花算法生成（见 sql/schema.sql 注释）
+      id-type: assign_id
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  health:
+    rabbit:
+      enabled: false   # ★ Stage 3 装好 RabbitMQ 后改为 true
+
+# 业务自定义开关（Stage 3 使用）
+selection:
+  # MQ 异步落库开关：false = 同步写库（压测 v2 状态），true = 发 MQ 异步落库（压测 v3 状态）。
+  # 用配置开关切换而不是改代码，保证 v2/v3 压测对照时代码完全一致，数据才有说服力。
+  async-db: false
+
+logging:
+  level:
+    com.luohaoyu.course: debug
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
