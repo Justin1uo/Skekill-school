@@ -13,6 +13,8 @@
 | 9/26 | S0 | Redis 启动后 ping 返回 NOAUTH | redis.windows.conf 里设了 requirepass | 密码写入 application-local.yml（已 gitignore），CLI 操作带 `-a` | ✅ |
 | 9/26 | S0 | 本机 JDK 是 21，蓝图锁 JDK 17 | - | pom 里 `<java.version>17</java.version>`：JDK 21 编译器用 release=17 目标，产物与 JDK 17 语义一致，无需另装 | ✅ |
 | 9/26 | S0 | 本机原生 Redis 是 3.2.100（微软 Windows 移植版），蓝图目标 7.x | 项目用到的命令（EVAL/GET/DECR/SADD/SISMEMBER/HSET/PEXPIRE）与 Redisson(3.0+)/Lettuce 均兼容 3.2，已实测 EVAL+SADD/SISMEMBER 通过 | 开发期先用 3.2；部署用 Docker redis:7-alpine。若 Day 4 锁相关出现莫名报错，备选方案：换 tporadowski Redis 5.0.14 Windows 版（10 分钟迁移） | 🔄 观察 |
+| 9/28 | S0 | PowerShell 执行 `mysql -uroot -p < sql/schema.sql` 报「"<"运算符是为将来使用而保留」 | PowerShell 不支持 `<` 输入重定向（bash/cmd 专属语法），不是 MySQL 的问题 | 用 `mysql -uroot -p -e "source sql/schema.sql"`（mysql 自己读文件，还避开 PS 管道 GBK 编码坑）；根治：VSCode 终端默认 profile 改为 Git Bash，指南里的命令都是 bash 语法 | ✅ |
+| 9/28 | S0 | PowerShell 执行 `curl localhost:8080/actuator/health` 报「无法识别该 URI 前缀」 | PS 的 `curl` 是 Invoke-WebRequest 别名（非真 curl），且该写法缺 `http://` 前缀；应用本身正常（后台实测 health=UP，Stage 0 已过） | 用 `curl.exe http://localhost:8080/...`；指南新增「0.终端约定」章节 + PS 对照表；约定：以后所有命令必须注明执行终端 | ✅ |
 | | | | | | |
 
 <!-- 模板（复制上面一行填写）：
