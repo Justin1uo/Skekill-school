@@ -5,6 +5,27 @@
 
 ---
 
+## 0. 终端约定（一次性设置，先做完再开工）
+
+**本指南所有命令按 Git Bash 语法书写**（`<` 重定向、`for i in $(seq …)`、`/d/` 路径、`&` 后台运行）。
+直接在 PowerShell 里跑会报各种错——已踩过两个：`<` 是保留运算符、`curl` 是 Invoke-WebRequest 别名。
+
+**一次性解决（30 秒）**：VSCode 终端右上角 `∨` → 选 **Git Bash** → 在其上右键「选择默认终端」→ 重开终端。此后指南命令照抄即可。
+
+坚持用 PowerShell 时的高频命令对照：
+
+| 用途 | Git Bash（指南写法） | PowerShell 等价写法 |
+|---|---|---|
+| 调接口 / 健康检查 | `curl -s http://localhost:8080/...` | `curl.exe http://localhost:8080/...`（**必须带 .exe 和 http:// 前缀**） |
+| 导入 SQL | `mysql -uroot -p < file` | `mysql -uroot -p -e "source file"`（PS 不支持 `<`） |
+| 启动 Redis | `./redis-server.exe redis.windows.conf &` | `d:\develop\Redis\redis-server.exe d:\develop\Redis\redis.windows.conf`（单独开一个标签页挂着，关页面=关 Redis） |
+| redis-cli | `/d/develop/Redis/redis-cli.exe -a 密码` | `& "d:\develop\Redis\redis-cli.exe" -a 密码` |
+| 批量并发 curl（Day 5） | `for i in $(seq 20); do … & done; wait` | **强烈建议切 Git Bash**。PS 里要写 `1..20 | % { curl.exe … }` 且 JSON 引号转义极易错，报错误导排查 |
+
+**汇报问题的规矩**：贴出「终端类型 + 完整命令 + 原始报错」三件套，我能一次定位。
+
+---
+
 ## 每日固定流程（照着走，不用每天想"今天干嘛"）
 
 1. **开工（5 min）**：看本指南当天章节 → 启动 MySQL 服务（已自启）+ Redis（命令见 Day 1）

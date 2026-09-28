@@ -33,6 +33,6 @@
 
 ## 当前进度快照
 
-- [x] Stage 0：骨架 + 通用层 + 实体/Mapper + schema.sql + Lua 脚本文件 + docker/（2026-09-26 由 Claude Code 搭建）
-- [ ] Stage 1：gen-data + 朴素选课（v1 基线）+ /mine —— 用户在 VSCode 与 Agent 结对完成
+- [x] Stage 0：骨架 + 通用层 + 实体/Mapper + schema.sql + Lua 脚本文件 + docker/（2026-09-26 由 Claude Code 搭建；health=UP 已实测）
+- [x] Stage 1：gen-data + 朴素选课（v1 基线）+ /mine —— 代码已完成并编译通过（待用户重启验证后 commit + tag v1-baseline）
 - 进度以 git tag 为准：v1-baseline → v2-cache-warmup → v2-lock-lua → v3-mq → v4-ratelimit → v5-fulllua → v1.0
