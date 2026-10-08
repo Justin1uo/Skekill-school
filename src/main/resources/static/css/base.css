@@ -1,0 +1,226 @@
+/* ==========================================================================
+ * base.css · reset / 布局栅格 / 排版层级 / 顶栏 / 页脚 / 工具类 / 骨架屏 / 断连横幅
+ * ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink);
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- 排版层级 ---------- */
+.display {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+h1.title {
+  font-family: var(--font-serif);
+  font-size: var(--fs-h1);
+  line-height: var(--lh-h1);
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+h2.section {
+  font-family: var(--font-serif);
+  font-size: var(--fs-h2);
+  line-height: var(--lh-h2);
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+h3 { font-size: var(--fs-h3); line-height: var(--lh-h3); font-weight: 600; }
+
+.subtitle { color: var(--ink-2); font-size: var(--fs-body); margin-top: var(--sp-2); }
+.sm  { font-size: var(--fs-sm); }
+.xs  { font-size: var(--fs-xs); }
+.muted { color: var(--ink-3); }
+.ink-2 { color: var(--ink-2); }
+
+/* ---------- 工具类 ---------- */
+.mono   { font-family: var(--font-mono); }
+.serif  { font-family: var(--font-serif); }
+.row    { display: flex; align-items: center; gap: var(--sp-3); }
+.row-tight { display: flex; align-items: center; gap: var(--sp-2); }
+.stack  { display: flex; flex-direction: column; gap: var(--sp-4); }
+.grow   { flex: 1; }
+.center { text-align: center; }
+.hidden { display: none !important; }
+/* 修复：作者样式（如 .conn-banner 的 display:flex）优先级高于浏览器 UA 默认的
+ * [hidden]{display:none}，导致 hidden 属性失效、横幅常驻。统一兜底。 */
+[hidden] { display: none !important; }
+
+/* ---------- 页面容器 ---------- */
+.page {
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--sp-7) var(--sp-5) var(--sp-8);
+  flex: 1;
+}
+.view-head { margin-bottom: var(--sp-6); }
+.section + .section { margin-top: var(--sp-7); }
+
+/* ---------- 顶栏（sticky 毛玻璃） ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--topbar-h);
+  background: rgba(240, 238, 229, .88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar-inner {
+  max-width: var(--page-max);
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 var(--sp-5);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+}
+.brand {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.brand em { font-style: normal; color: var(--accent); }
+
+.nav { display: flex; gap: var(--sp-1); }
+.nav a {
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-body);
+  color: var(--ink-2);
+  text-decoration: none;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.nav a:hover { color: var(--ink); background: var(--bg-soft); }
+.nav a.active { background: var(--accent-soft); color: var(--accent-ink); font-weight: 500; }
+
+.identity-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 5px 8px 5px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.identity-chip .mono { color: var(--ink); }
+.identity-chip .chip-btn {
+  border: none;
+  background: var(--bg-soft);
+  color: var(--ink-2);
+  font-size: var(--fs-xs);
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.identity-chip .chip-btn:hover { background: var(--accent-soft); color: var(--accent-ink); }
+
+/* ---------- 页脚 ---------- */
+.footer {
+  border-top: 1px solid var(--line);
+  padding: var(--sp-4) var(--sp-5);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  font-size: var(--fs-xs);
+  color: var(--ink-2);
+  max-width: var(--page-max);
+  width: 100%;
+  margin: 0 auto;
+}
+.footer code { color: var(--ink-2); }
+
+/* ---------- 断连横幅 ---------- */
+.conn-banner {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: var(--danger);
+  color: #FFF6F4;
+  padding: 10px var(--sp-5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+}
+.conn-banner code { color: #FFF6F4; }
+.conn-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #FFF6F4;
+  animation: pulse 1.2s var(--ease) infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+/* 横幅可见时顶栏下移让位（兄弟选择器，banner 始终在 topbar 前） */
+.conn-banner:not([hidden]) + .topbar { top: 39px; }
+
+/* ---------- 骨架屏 ---------- */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-soft) 25%, var(--surface) 50%, var(--bg-soft) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: var(--r-sm);
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+.skeleton.card { height: 148px; border-radius: var(--r-md); }
+.skeleton.line { height: 14px; margin: var(--sp-2) 0; }
+.skeleton.line.w60 { width: 60%; }
+.skeleton.line.w40 { width: 40%; }
+
+/* ---------- 空态 ---------- */
+.empty-state {
+  text-align: center;
+  padding: var(--sp-8) var(--sp-5);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-md);
+  background: transparent;
+}
+.empty-state h3 {
+  font-family: var(--font-serif);
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  margin-bottom: var(--sp-2);
+}
+.empty-state p { color: var(--ink-3); font-size: var(--fs-sm); margin-bottom: var(--sp-5); }
+
+/* ---------- 焦点可见性（键盘可访问性） ---------- */
+:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* ---------- 降级动画偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

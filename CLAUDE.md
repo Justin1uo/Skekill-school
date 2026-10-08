@@ -22,6 +22,7 @@
 - `uk_student_course` 唯一索引是最后防线，不是可选项
 - 限流按 studentId 不按 IP（校园网 NAT）
 - Redis key 命名统一在 `CacheKeys.java`，禁止散落硬编码
+- Service 层写裸 `@Service` 类，不做 interface+Impl（Boot 默认 CGLIB 代理，"为代理而抽接口"前提已消失；全项目无运行时多实现点；2026-10-07 与用户讨论后裁决维持，勿再翻案）
 
 ## 本机环境事实（2026-09-26 盘点）
 

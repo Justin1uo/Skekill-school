@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skekill 选课 · 高并发选课系统演示</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+  <!-- 后端不可达时的全局横幅（不白屏兜底） -->
+  <div id="conn-banner" class="conn-banner" hidden role="alert">
+    <span class="conn-dot"></span>
+    <span>无法连接后端（<code class="mono">localhost:8080</code>），请确认 Spring Boot 已启动</span>
+  </div>
+
+  <header id="topbar" class="topbar"></header>
+
+  <main id="app" class="page"></main>
+
+  <footer class="footer">
+    <span>Skekill 选课 · 高并发选课系统演示前端（纯静态 / 零依赖 / 同源免 CORS）</span>
+    <span class="muted">演示环境无鉴权，身份自报（studentId 1~5000）；业务结果以响应体 <code class="mono">code</code> 为准</span>
+  </footer>
+
+  <div id="toast-root" class="toast-root" aria-live="polite"></div>
+  <div id="modal-root"></div>
+
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>
