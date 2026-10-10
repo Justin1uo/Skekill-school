@@ -73,6 +73,11 @@ selection:
   # MQ 异步落库开关：false = 同步写库（压测 v2 状态），true = 发 MQ 异步落库（压测 v3 状态）。
   # 用配置开关切换而不是改代码，保证 v2/v3 压测对照时代码完全一致，数据才有说服力。
   async-db: false
+  # L2 TTL：base + U(0, jitter]，随机抖动是【雪崩】防线（见 CourseCacheService 类注释）。
+  # L1 固定 60s 写在 Caffeine builder 里，不放这里——L1 是代码级容量策略，不是运维参数。
+  cache:
+    l2-base-seconds: 300
+    l2-jitter-seconds: 60
 
 logging:
   level:

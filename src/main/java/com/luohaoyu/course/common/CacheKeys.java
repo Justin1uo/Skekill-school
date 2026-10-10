@@ -29,6 +29,11 @@ public final class CacheKeys {
         return "course:detail:" + courseId;
     }
 
+    /** course:list → 课程列表 L2 全量缓存（L1 是 JVM 内 Caffeine，不占 Redis key） */
+    public static String courseList() {
+        return "course:list";
+    }
+
     // ---------- 学生维度（方案 A 全原子 Lua 用，Stage 5 对比实验） ----------
 
     /** student:sched:{studentId} → SET 已占时段，元素形如 "3:5"（周三第 5 节） */
@@ -55,6 +60,16 @@ public final class CacheKeys {
 
     /** lock:warmup → 预热任务锁，保证多实例部署时预热只执行一次 */
     public static final String WARMUP_LOCK = "lock:warmup";
+
+    /**
+     * warmup:students → 上轮预热写入的学生 id 名册（SET）。
+     * ★ 为什么有名册：清旧缓存需要知道"上次预热过哪些学生"。学生数大时不能 KEYS/SCAN
+     *   （阻塞单线程 Redis，压测期间是事故源），记名册后下轮精确 DEL——
+     *   与蓝图第 9 节"全集可枚举就不用 SCAN"是同一思想。
+     */
+    public static String warmupStudentRoster() {
+        return "warmup:students";
+    }
 
     /** lock:rebuild:course:{courseId} → 热点课程缓存重建互斥锁（防击穿，Stage 2） */
     public static String courseRebuildLock(long courseId) {

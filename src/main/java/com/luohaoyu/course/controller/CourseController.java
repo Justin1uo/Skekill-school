@@ -1,52 +1,49 @@
 package com.luohaoyu.course.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.luohaoyu.course.common.ErrorCode;
 import com.luohaoyu.course.common.Result;
 import com.luohaoyu.course.domain.entity.Course;
-import com.luohaoyu.course.mapper.CourseMapper;
-import com.luohaoyu.course.mapper.SelectionMapper;
+import com.luohaoyu.course.service.CourseCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * 课程只读接口。GET /api/courses 是前端"课程广场"列表的数据源。
+ * 课程只读接口。Stage 2 起取数路径换成 CourseCacheService（L1 Caffeine + L2 Redis），
+ * 响应形状与本文件 Stage 1 版本一字不差——前端契约兑现（蓝图接口清单 S2 两项在此）。
  *
- * ★ 定位说明（前端契约先行，此处是提前落地的朴素 DB 版）：
- *   蓝图 Stage 2 会给该接口加 L1 Caffeine + L2 Redis 缓存与预热，
- *   届时只替换本方法的取数路径，响应形状（Result&lt;List&lt;Course&gt;&gt;）一字不改，
- *   前端课程网格自动享受加速，无需改动。
+ * 注意 controller 变得很薄：缓存策略（空值标记/互斥重建/抖动 TTL）全部收在
+ * Service 层，这里只负责 HTTP 映射。取数逻辑（两条 SQL 无 N+1）搬进了
+ * CourseCacheService.loadListFromDb，git blame 能追到 bff0d84 的原始实现。
  */
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class CourseController {
 
-    private final CourseMapper courseMapper;
-    private final SelectionMapper selectionMapper;
+    private final CourseCacheService courseCacheService;
 
-    /**
-     * 课程列表（status=1 按 id 升序，全集可枚举故不做分页——与蓝图第 7 节布隆裁决一致）。
-     * selectedCount 实时取自 selection 表聚合（原因见 SelectionMapper.countSelectedGroupByCourse 注释），
-     * 固定两条 SQL，无 N+1。
-     */
+    /** 课程列表（L1 60s → L2 300s±抖动 → DB） */
     @GetMapping("/courses")
     public Result<List<Course>> list() {
-        List<Course> courses = courseMapper.selectList(
-                new QueryWrapper<Course>().eq("status", 1).orderByAsc("id"));
+        return Result.ok(courseCacheService.list());
+    }
 
-        Map<Long, Integer> counts = new HashMap<>();
-        for (Map<String, Object> row : selectionMapper.countSelectedGroupByCourse()) {
-            Long courseId = ((Number) row.get("courseId")).longValue();
-            counts.put(courseId, ((Number) row.get("cnt")).intValue());
+    /**
+     * 课程详情。不存在返回 1001——但注意"不存在"也会被缓存（NULL_MARKER 60s），
+     * 反复刷同一个非法 id 只有第一次真打到 DB（这就是防穿透的验证点，
+     * Stage 2 完成标志第 2 条：清掉 Redis 重启，接口不报错）。
+     */
+    @GetMapping("/courses/{id}")
+    public Result<Course> detail(@PathVariable Long id) {
+        Course course = courseCacheService.getDetail(id);
+        if (course == null) {
+            return Result.fail(ErrorCode.COURSE_NOT_FOUND);
         }
-        courses.forEach(c -> c.setSelectedCount(counts.getOrDefault(c.getId(), 0)));
-
-        return Result.ok(courses);
+        return Result.ok(course);
     }
 }
